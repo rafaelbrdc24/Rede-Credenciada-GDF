@@ -1,0 +1,18 @@
+[
+  {
+    "nome": "CLÍNICA SAÚDE TOTAL",
+    "telefone": "(61) 3333-4444",
+    "especialidade": "Cardiologia, Clínica Geral",
+    "bairro": "ASA NORTE",
+    "cidade": "Brasília",
+    "estado": "DF"
+  },
+  {
+    "nome": "HOSPITAL VIDA",
+    "telefone": "(61) 2222-1111",
+    "especialidade": "Ortopedia, Pediatria",
+    "bairro": "TAGUATINGA",
+    "cidade": "Brasília",
+    "estado": "DF"
+  }
+]
