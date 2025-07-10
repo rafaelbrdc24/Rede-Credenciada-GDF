@@ -43,7 +43,7 @@
       border: none;
       border-radius: 16px;
       cursor: pointer;
-      color: blue;
+      color: white; /* Corrigido para branco */
     }
     .direta {
       background: linear-gradient(to right, #2962ff, #00c853);
@@ -76,7 +76,7 @@
     }
     .result h3 {
       margin: 0;
-      color: #ffffff; /* Corrigido: Nomes brancos */
+      color: #ffffff;
     }
     .result p {
       margin: 0.2rem 0;
@@ -86,8 +86,8 @@
     }
     /* Estilo para o botão de pesquisa */
     #searchForm button {
-        background-color: #2962ff; /* Corrigido: Botão azul */
-        color: white; /* Corrigido: Texto do botão branco */
+        background-color: #2962ff;
+        color: white;
     }
     footer {
       text-align: center;
@@ -177,7 +177,7 @@
       try {
         const res = await fetch('especialidades_exatas.json');
         const specialties = await res.json();
-        
+
         const uniqueSpecialties = new Set();
         specialties.forEach(spec => {
           const individualSpecs = spec.split(/, |[\n]/).map(s => s.trim());
@@ -190,7 +190,7 @@
 
         const sortedSpecialties = Array.from(uniqueSpecialties).sort();
         similarityMap = getSimilarityMapping(sortedSpecialties.map(normalize));
-        
+
         const datalist = document.getElementById('especialidadesList');
         sortedSpecialties.forEach(spec => {
           const option = document.createElement('option');
@@ -213,11 +213,11 @@
       try {
         const res = await fetch(`${sheet}.json`);
         data = await res.json();
-        
+
         if (data && data["REDE CREDENCIADA"] && Array.isArray(data["REDE CREDENCIADA"])) {
           data = data["REDE CREDENCIADA"];
         }
-        
+
         resultsContainer.innerHTML = '';
         searchTable();
       } catch (error) {
@@ -242,7 +242,7 @@
         const entrySpecialtiesCanonical = entrySpecialties.map(s => similarityMap[s] || s);
 
         const specialtyMatch = !especialidadeInput || entrySpecialtiesCanonical.some(s => s.includes(canonicalSearchTerm));
-        
+
         return (!nome || normalize(entry.nome).includes(nome)) &&
                specialtyMatch &&
                (!bairro || normalize(entry.bairro).includes(bairro)) &&
@@ -268,7 +268,7 @@
         `;
       });
     };
-    
+
     window.onload = () => {
       loadSpecialties();
     };
