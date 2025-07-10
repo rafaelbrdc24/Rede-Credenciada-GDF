@@ -77,57 +77,163 @@
     .result p {
       margin: 0.2rem 0;
     }
+    .result p:last-child {
+      margin-bottom: 0;
+    }
   </style>
 </head>
 <body>
   <header>
     <img src="logogdfsaude.png" alt="GDF Saúde" />
   </header>
-
   <div class="container">
     <div class="btns">
       <button class="direta" onclick="loadSheet('direta')">Rede Credenciada Direta</button>
       <button class="indireta" onclick="loadSheet('indireta')">Rede Credenciada Indireta</button>
     </div>
-
     <form id="searchForm" onsubmit="event.preventDefault(); searchTable()">
       <div class="grid">
-        <input type="text" id="nome" placeholder="Razão Social ou Nome Fantasia">
-        <input type="text" id="especialidade" placeholder="Especialidades Atendidas">
-        <input type="text" id="bairro" placeholder="Bairro">
-        <input type="text" id="cidade" placeholder="Cidade">
-        <input type="text" id="estado" placeholder="Estado">
+        <input type="text" id="nome" placeholder="Nome" />
+        <input type="text" id="especialidade" list="especialidadesList" placeholder="Especialidade" />
+        <datalist id="especialidadesList"></datalist>
+        <input type="text" id="bairro" placeholder="Bairro" />
+        <input type="text" id="cidade" placeholder="Cidade" />
+        <input type="text" id="estado" placeholder="Estado" />
       </div>
-      <button type="submit" style="margin-top: 1rem; background-color: #2962ff; color: white; border-radius: 8px; padding: 0.8rem;">Buscar</button>
+      <button type="submit" style="margin-top: 1rem;">Pesquisar</button>
     </form>
-
-    <div id="results" class="grid"></div>
+    <div id="results"></div>
   </div>
 
   <script>
-    let data = [];
-    function normalize(str) {
-      return str?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") || "";
-    }
+    let data;
+    let currentSheet;
+    let similarityMap; // Mapa para especialidades semelhantes
 
-    async function loadSheet(tipo) {
-      const file = tipo === 'direta' ? 'direta.json' : 'indireta.json';
-      const res = await fetch(file);
-      data = await res.json();
-      document.getElementById('searchForm').style.display = 'flex';
-      document.getElementById('results').innerHTML = '';
-    }
+    const normalize = (str) => {
+      if (!str) return '';
+      return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
 
-    function searchTable() {
+    const getSimilarityMapping = (specialties) => {
+      const map = {};
+      const normalizedSpecialties = specialties.map(s => normalize(s));
+
+      // Mapeamento manual de termos semelhantes
+      const synonyms = [
+        ['imologia', 'imunologia'],
+        ['ortopedista', 'ortopedia'],
+        ['fisioterpia', 'fisioterapia'],
+        ['cirirgia', 'cirurgia'],
+        ['angilogia', 'angiologia'],
+        ['anestesioloagia', 'anestesiologia'],
+        ['anestologia', 'anestesiologia'],
+        ['dematologia', 'dermatologia'],
+        ['dermatlogia', 'dermatologia'],
+        ['coloprtologia', 'coloproctologia'],
+        ['coloproctolgia', 'coloproctologia'],
+        ['coloproctoloiga', 'coloproctologia'],
+        ['clinica med', 'clínica médica'],
+        ['clniica medica', 'clínica médica'],
+        ['clínica médfica', 'clínica médica'],
+        ['clínico geral', 'clínica geral'],
+        ['cirugiao', 'cirurgiao'],
+        ['cirurgia ancologica', 'cirurgia oncológica'],
+        ['cirurgia oncolgico', 'cirurgia oncológica'],
+        ['cancerologia/oncologia', 'oncologia'],
+        ['cancerologia', 'oncologia'],
+      ];
+
+      synonyms.forEach(pair => {
+        const [typo, correct] = pair;
+        normalizedSpecialties.forEach(s => {
+          if (s.includes(typo)) {
+            map[s] = normalize(correct);
+          }
+        });
+      });
+
+      return map;
+    };
+
+    const loadSpecialties = async () => {
+      try {
+        const res = await fetch('especialidades_exatas.json');
+        const specialties = await res.json();
+        
+        const uniqueSpecialties = new Set();
+        specialties.forEach(spec => {
+          // Dividir especialidades múltiplas
+          const individualSpecs = spec.split(/, |[\n]/).map(s => s.trim());
+          individualSpecs.forEach(s => {
+            if (s) {
+              // Adiciona a especialidade original e normalizada para o mapeamento
+              uniqueSpecialties.add(normalize(s));
+            }
+          });
+        });
+
+        // Converte o Set para Array e ordena
+        const sortedSpecialties = Array.from(uniqueSpecialties).sort();
+        
+        // Mapeia termos semelhantes
+        similarityMap = getSimilarityMapping(sortedSpecialties);
+        
+        const datalist = document.getElementById('especialidadesList');
+        sortedSpecialties.forEach(spec => {
+          const option = document.createElement('option');
+          option.value = spec;
+          datalist.appendChild(option);
+        });
+
+      } catch (error) {
+        console.error('Erro ao carregar especialidades:', error);
+      }
+    };
+
+    const loadSheet = async (sheet) => {
+      currentSheet = sheet;
+      const form = document.getElementById('searchForm');
+      const resultsContainer = document.getElementById('results');
+      form.style.display = 'flex';
+      resultsContainer.innerHTML = 'Carregando dados...';
+
+      try {
+        const res = await fetch(`${sheet}.json`);
+        data = await res.json();
+        
+        // Se a estrutura do JSON for um objeto com uma chave, ajusta
+        if (data && data["REDE CREDENCIADA"] && Array.isArray(data["REDE CREDENCIADA"])) {
+          data = data["REDE CREDENCIADA"];
+        }
+        
+        resultsContainer.innerHTML = '';
+        searchTable(); // Exibe todos os resultados após o carregamento inicial
+      } catch (error) {
+        console.error(`Erro ao carregar a planilha ${sheet}:`, error);
+        resultsContainer.innerHTML = `<p>Erro ao carregar os dados. Verifique se o arquivo ${sheet}.json está disponível e formatado corretamente.</p>`;
+      }
+    };
+
+    const searchTable = () => {
+      if (!data) return;
+
       const nome = normalize(document.getElementById('nome').value);
-      const especialidade = normalize(document.getElementById('especialidade').value);
+      const especialidadeInput = normalize(document.getElementById('especialidade').value);
       const bairro = normalize(document.getElementById('bairro').value);
       const cidade = normalize(document.getElementById('cidade').value);
       const estado = normalize(document.getElementById('estado').value);
 
+      // Obtém o termo de pesquisa normalizado e o termo padrão (se houver)
+      const searchTerm = especialidadeInput;
+      const canonicalSearchTerm = similarityMap[searchTerm] || searchTerm;
+
       const results = data.filter(entry => {
+        const normalizedSpecialty = normalize(entry.especialidade);
+        const canonicalEntrySpecialty = similarityMap[normalizedSpecialty] || normalizedSpecialty;
+        
         return (!nome || normalize(entry.nome).includes(nome)) &&
-               (!especialidade || normalize(entry.especialidade).includes(especialidade)) &&
+               (!searchTerm || canonicalEntrySpecialty.includes(canonicalSearchTerm)) &&
                (!bairro || normalize(entry.bairro).includes(bairro)) &&
                (!cidade || normalize(entry.cidade).includes(cidade)) &&
                (!estado || normalize(entry.estado).includes(estado));
@@ -144,13 +250,18 @@
         container.innerHTML += `
           <div class="result">
             <h3>${entry.nome}</h3>
-            <p><strong>Telefone:</strong> ${entry.telefone}</p>
+            <p><strong>Telefone:</strong> ${entry.telefone || 'Não informado'}</p>
             <p><strong>Especialidade:</strong> ${entry.especialidade}</p>
             <p><strong>Endereço:</strong> ${entry.bairro}, ${entry.cidade} - ${entry.estado}</p>
           </div>
         `;
       });
-    }
+    };
+    
+    // Inicia o carregamento das especialidades quando a página é carregada
+    window.onload = () => {
+      loadSpecialties();
+    };
   </script>
 </body>
 </html>
