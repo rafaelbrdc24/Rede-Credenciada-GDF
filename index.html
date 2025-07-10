@@ -11,6 +11,9 @@
       background-color: #f8f9fa;
       margin: 0;
       padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     header {
       background-color: #ffffff;
@@ -26,6 +29,7 @@
       padding: 2rem;
       max-width: 1200px;
       margin: auto;
+      flex: 1;
     }
     .btns {
       display: flex;
@@ -80,6 +84,13 @@
     .result p:last-child {
       margin-bottom: 0;
     }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #ffffff;
+      border-top: 2px solid #ccc;
+      margin-top: auto;
+    }
   </style>
 </head>
 <body>
@@ -105,10 +116,15 @@
     <div id="results"></div>
   </div>
 
+  <footer>
+    <p>Verção: 0.0.8</p>
+    <p>Dev: Rafael Barros</p>
+  </footer>
+
   <script>
     let data;
     let currentSheet;
-    let similarityMap; // Mapa para especialidades semelhantes
+    let similarityMap;
 
     const normalize = (str) => {
       if (!str) return '';
@@ -117,9 +133,6 @@
 
     const getSimilarityMapping = (specialties) => {
       const map = {};
-      const normalizedSpecialties = specialties.map(s => normalize(s));
-
-      // Mapeamento manual de termos semelhantes
       const synonyms = [
         ['imologia', 'imunologia'],
         ['ortopedista', 'ortopedia'],
@@ -137,7 +150,7 @@
         ['clniica medica', 'clínica médica'],
         ['clínica médfica', 'clínica médica'],
         ['clínico geral', 'clínica geral'],
-        ['cirugiao', 'cirurgiao'],
+        ['cirugiao', 'cirurgia'],
         ['cirurgia ancologica', 'cirurgia oncológica'],
         ['cirurgia oncolgico', 'cirurgia oncológica'],
         ['cancerologia/oncologia', 'oncologia'],
@@ -146,13 +159,12 @@
 
       synonyms.forEach(pair => {
         const [typo, correct] = pair;
-        normalizedSpecialties.forEach(s => {
-          if (s.includes(typo)) {
+        specialties.forEach(s => {
+          if (s.includes(normalize(typo))) {
             map[s] = normalize(correct);
           }
         });
       });
-
       return map;
     };
 
@@ -163,21 +175,16 @@
         
         const uniqueSpecialties = new Set();
         specialties.forEach(spec => {
-          // Dividir especialidades múltiplas
           const individualSpecs = spec.split(/, |[\n]/).map(s => s.trim());
           individualSpecs.forEach(s => {
             if (s) {
-              // Adiciona a especialidade original e normalizada para o mapeamento
-              uniqueSpecialties.add(normalize(s));
+              uniqueSpecialties.add(s);
             }
           });
         });
 
-        // Converte o Set para Array e ordena
         const sortedSpecialties = Array.from(uniqueSpecialties).sort();
-        
-        // Mapeia termos semelhantes
-        similarityMap = getSimilarityMapping(sortedSpecialties);
+        similarityMap = getSimilarityMapping(sortedSpecialties.map(normalize));
         
         const datalist = document.getElementById('especialidadesList');
         sortedSpecialties.forEach(spec => {
@@ -202,13 +209,12 @@
         const res = await fetch(`${sheet}.json`);
         data = await res.json();
         
-        // Se a estrutura do JSON for um objeto com uma chave, ajusta
         if (data && data["REDE CREDENCIADA"] && Array.isArray(data["REDE CREDENCIADA"])) {
           data = data["REDE CREDENCIADA"];
         }
         
         resultsContainer.innerHTML = '';
-        searchTable(); // Exibe todos os resultados após o carregamento inicial
+        searchTable();
       } catch (error) {
         console.error(`Erro ao carregar a planilha ${sheet}:`, error);
         resultsContainer.innerHTML = `<p>Erro ao carregar os dados. Verifique se o arquivo ${sheet}.json está disponível e formatado corretamente.</p>`;
@@ -224,16 +230,16 @@
       const cidade = normalize(document.getElementById('cidade').value);
       const estado = normalize(document.getElementById('estado').value);
 
-      // Obtém o termo de pesquisa normalizado e o termo padrão (se houver)
-      const searchTerm = especialidadeInput;
-      const canonicalSearchTerm = similarityMap[searchTerm] || searchTerm;
+      const canonicalSearchTerm = similarityMap[especialidadeInput] || especialidadeInput;
 
       const results = data.filter(entry => {
-        const normalizedSpecialty = normalize(entry.especialidade);
-        const canonicalEntrySpecialty = similarityMap[normalizedSpecialty] || normalizedSpecialty;
+        const entrySpecialties = entry.especialidade ? entry.especialidade.split(/, |[\n]/).map(s => normalize(s)) : [];
+        const entrySpecialtiesCanonical = entrySpecialties.map(s => similarityMap[s] || s);
+
+        const specialtyMatch = !especialidadeInput || entrySpecialtiesCanonical.some(s => s.includes(canonicalSearchTerm));
         
         return (!nome || normalize(entry.nome).includes(nome)) &&
-               (!searchTerm || canonicalEntrySpecialty.includes(canonicalSearchTerm)) &&
+               specialtyMatch &&
                (!bairro || normalize(entry.bairro).includes(bairro)) &&
                (!cidade || normalize(entry.cidade).includes(cidade)) &&
                (!estado || normalize(entry.estado).includes(estado));
@@ -258,7 +264,6 @@
       });
     };
     
-    // Inicia o carregamento das especialidades quando a página é carregada
     window.onload = () => {
       loadSpecialties();
     };
