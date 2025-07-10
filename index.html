@@ -76,7 +76,7 @@
     }
     .result h3 {
       margin: 0;
-      color: #2962ff; /* Corrigido: Nomes em azul */
+      color: #2962ff;
     }
     .result p {
       margin: 0.2rem 0;
@@ -260,7 +260,7 @@
       results.forEach(entry => {
         container.innerHTML += `
           <div class="result">
-            <h3>${entry.nome}</h3>
+            <h3 style="color: #2962ff;">${entry.nome}</h3>
             <p><strong>Telefone:</strong> ${entry.telefone || 'Não informado'}</p>
             <p><strong>Especialidade:</strong> ${entry.especialidade}</p>
             <p><strong>Endereço:</strong> ${entry.bairro}, ${entry.cidade} - ${entry.estado}</p>
