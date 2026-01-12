@@ -60,7 +60,7 @@
         "bairro": "ASA SUL",
         "cidade": "Brasília",
         "estado": "DF",
-        "procedimento": ""
+        "procedimento": "Urofluxometria"
     },
     {
         "nome": "HOSPITAL DAHER LAGO SUL",
@@ -69,7 +69,7 @@
         "bairro": "LAGO SUL",
         "cidade": "Brasília",
         "estado": "DF",
-        "procedimento": ""
+        "procedimento": "ptose palpebral"
     },
     {
         "nome": "EXAME LABORATÓRIO E IMAGEM",
@@ -519,7 +519,7 @@
         "bairro": "ASA SUL",
         "cidade": "Brasília",
         "estado": "DF",
-        "procedimento": ""
+        "procedimento": "ptose palpebral"
     },
     {
         "nome": "IPODF - INSTITUTO PANAMERICANO DE OFTALMOLOGIA",
@@ -852,7 +852,7 @@
         "bairro": "ASA SUL",
         "cidade": "Brasília",
         "estado": "DF",
-        "procedimento": ""
+        "procedimento": "ptose palpebral"
     },
     {
         "nome": "CARDIO VIDA",
@@ -1464,7 +1464,7 @@
         "bairro": "SOBRADINHO",
         "cidade": "Brasília",
         "estado": "DF",
-        "procedimento": ""
+        "procedimento": "Urofluxometria"
     },
     {
         "nome": "MISRAEL PSICOLOGIA",
@@ -2949,7 +2949,7 @@
         "bairro": "TAGUATINGA",
         "cidade": "Brasília",
         "estado": "DF",
-        "procedimento": ""
+        "procedimento": "Urofluxometria"
     },
     {
         "nome": "LABORATÓRIO ANALISES",
@@ -3120,7 +3120,7 @@
         "bairro": "ASA NORTE",
         "cidade": "Brasília",
         "estado": "DF",
-        "procedimento": "Cirurgia de Tireoide, Angioplastia, Endoscopia"
+        "procedimento": "Cirurgia de Tireoide, Angioplastia, Endoscopia, ptose palpebral"
     },
     {
         "nome": "HOSPITAL SANTA LÚCIA SUL",
