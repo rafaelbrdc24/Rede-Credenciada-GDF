@@ -857,7 +857,7 @@ WE ORTOPEDIA CONTEMPORANEA LTDA
       results.forEach(entry => {
         const isInactive = isInactiveNetwork(entry);
         const statusClass = isInactive ? 'inactive' : 'active';
-        const statusLabel = isInactive ? 'Nao atende mais' : 'Ativa';
+        const statusLabel = isInactive ? 'Descredenciado' : 'Ativa';
         const procedimentoHtml = entry.procedimento && (Array.isArray(entry.procedimento) ? entry.procedimento.length > 0 : entry.procedimento.trim() !== '') 
           ? `<p><strong>Procedimento:</strong> ${Array.isArray(entry.procedimento) ? entry.procedimento.join(', ') : entry.procedimento}</p>` 
           : '';
