@@ -400,6 +400,14 @@
           <input type="text" id="estado" placeholder="Ex.: DF" />
         </div>
         <div class="field">
+          <label for="statusRede">Status da rede</label>
+          <select id="statusRede">
+            <option value="all" selected>Ativo e Descredenciado</option>
+            <option value="active">Ativas</option>
+            <option value="inactive">Descredenciadas</option>
+          </select>
+        </div>
+        <div class="field">
           <label for="procedimento">Procedimento</label>
           <input type="text" id="procedimento" list="procedimentosList" placeholder="Ex.: Exame de sangue" />
           <datalist id="procedimentosList"></datalist>
@@ -543,6 +551,7 @@ HO SOBRADINHO SALUTE LTDA 29.725.323/0001-24
 HOBRASIL HOSPITAL OFTALMOLÓGICO DO BRASILA LTDA 00.649.756/0009-13
 HODF - HOSPITAL DE OLHOS DO DISTRITO FEDERAL S/A 34.639.032/0001-53
 HOSPITAL DAS CLÍNICAS E PRONTO SOCORRO DE FRATURAS DE CEILÂNDIA LTDA 01.273.401/0001-88
+HOSPITAL SANTA LUZIA
 IBRAFONO - INSTITUTO BRASILEIRO DE FONALDIOLOGIA LTDA 22.041.558/0001-58
 ICD - INSTITUTO DE CIRURGIA DIGESTIVA LTDA 19.055.984/0001-36
 IDEALCOR FISIOTERAPIA E REABILITAÇÃO LTDA 11.820.477/0001-30
@@ -812,10 +821,17 @@ WE ORTOPEDIA CONTEMPORANEA LTDA
       const cidade = normalize(document.getElementById('cidade').value);
       const estado = normalize(document.getElementById('estado').value);
       const procedimento = normalize(document.getElementById('procedimento').value);
+      const statusRede = document.getElementById('statusRede')?.value || 'all';
 
       const canonicalSearchTerm = similarityMap[especialidadeInput] || especialidadeInput;
 
       const results = data.filter(entry => {
+        const isInactive = isInactiveNetwork(entry);
+        const statusMatch =
+          statusRede === 'all' ||
+          (statusRede === 'active' && !isInactive) ||
+          (statusRede === 'inactive' && isInactive);
+
         const entrySpecialties = entry.especialidade ? entry.especialidade.split(/, |[\n]/).map(s => normalize(s)) : [];
         const entrySpecialtiesCanonical = entrySpecialties.map(s => similarityMap[s] || s);
 
@@ -836,7 +852,8 @@ WE ORTOPEDIA CONTEMPORANEA LTDA
           }
         }
 
-        return (!nome || normalize(entry.nome).includes(nome)) &&
+        return statusMatch &&
+               (!nome || normalize(entry.nome).includes(nome)) &&
                specialtyMatch &&
                (!bairro || normalize(entry.bairro).includes(bairro)) &&
                (!cidade || normalize(entry.cidade).includes(cidade)) &&
