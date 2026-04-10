@@ -370,6 +370,10 @@
           <datalist id="especialidadesList"></datalist>
         </div>
         <div class="field">
+          <label for="especialidade2">Especialidade (2)</label>
+          <input type="text" id="especialidade2" list="especialidadesList" placeholder="Ex.: Ortopedia" />
+        </div>
+        <div class="field">
           <label for="bairro">Bairro</label>
           <select id="bairro">
           <option value="">Todos os bairros</option>
@@ -419,7 +423,7 @@
   </div>
 
   <footer>
-    <p>Versão: 2.2.0</p>
+    <p>Versão: 2.2.5</p>
     <p>Desenvolvido por: Rafael Barros</p>
   </footer>
 
@@ -817,6 +821,7 @@ WE ORTOPEDIA CONTEMPORANEA LTDA
 
       const nome = normalize(document.getElementById('nome').value);
       const especialidadeInput = normalize(document.getElementById('especialidade').value);
+      const especialidadeInput2 = normalize(document.getElementById('especialidade2')?.value);
       const bairro = normalize(document.getElementById('bairro').value);
       const cidade = normalize(document.getElementById('cidade').value);
       const estado = normalize(document.getElementById('estado').value);
@@ -824,6 +829,7 @@ WE ORTOPEDIA CONTEMPORANEA LTDA
       const statusRede = document.getElementById('statusRede')?.value || 'all';
 
       const canonicalSearchTerm = similarityMap[especialidadeInput] || especialidadeInput;
+      const canonicalSearchTerm2 = similarityMap[especialidadeInput2] || especialidadeInput2;
 
       const results = data.filter(entry => {
         const isInactive = isInactiveNetwork(entry);
@@ -835,7 +841,8 @@ WE ORTOPEDIA CONTEMPORANEA LTDA
         const entrySpecialties = entry.especialidade ? entry.especialidade.split(/, |[\n]/).map(s => normalize(s)) : [];
         const entrySpecialtiesCanonical = entrySpecialties.map(s => similarityMap[s] || s);
 
-        const specialtyMatch = !especialidadeInput || entrySpecialtiesCanonical.some(s => s.includes(canonicalSearchTerm));
+        const matchesSpecialty = (term) => !term || entrySpecialtiesCanonical.some(s => s.includes(term));
+        const specialtyMatch = matchesSpecialty(canonicalSearchTerm) && matchesSpecialty(canonicalSearchTerm2);
 
         // Busca por procedimento - pode ser string ou array
         let procedimentoMatch = true;
